@@ -54,8 +54,8 @@ export default {
         const res = await fetch(HUBCLOUD_URL);
         upstreamData  = await res.json()
       } catch (e) {
-        console.log(e)
-        return new Response(null,{status:500})
+        const error = e as Error;
+        return Response.json(error)
       }
 
       const currentPage = Number(upstreamData.page);
