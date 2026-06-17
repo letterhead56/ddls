@@ -49,8 +49,14 @@ export default {
       const pageParam = url.searchParams.get("page") ?? "1";
 
       const HUBCLOUD_URL = `${env.HUBCLOUD}&q=${encodedQuery}&page=${pageParam}`;
-      const res = await fetch(HUBCLOUD_URL);
-      const upstreamData: Hubcloud = await res.json();
+      let upstreamData: Hubcloud;
+      try{
+        const res = await fetch(HUBCLOUD_URL);
+        upstreamData  = await res.json()
+      } catch (e) {
+        console.log(e)
+        return new Response(null,{status:500})
+      }
 
       const currentPage = Number(upstreamData.page);
       const pageSize = Number(upstreamData.per_page);
