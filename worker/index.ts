@@ -50,13 +50,13 @@ export default {
 
       const HUBCLOUD_URL = `${env.HUBCLOUD}&q=${encodedQuery}&page=${pageParam}`;
       let upstreamData: Hubcloud;
-      try{
+      try {
         const res = await fetch(HUBCLOUD_URL);
-        upstreamData  = await res.json()
+        upstreamData = await res.json();
       } catch (e) {
         const error = e as Error;
-        console.error(error)
-        return Response.json({error})
+        console.error(error);
+        return Response.json({name:error.name, message: error.message , cause:error.cause , stack: error.stack});
       }
 
       const currentPage = Number(upstreamData.page);
