@@ -52,11 +52,58 @@ export default {
       let upstreamData: Hubcloud;
       try {
         const res = await fetch(HUBCLOUD_URL);
+
+        // 1. Check if the HTTP status is successful (e.g., 200 OK)
+        if (!res.ok) {
+          // Read the error page as text instead of JSON
+          const errorText = await res.text();
+          console.error(
+            `Upstream failed with status ${res.status}:`,
+            errorText.substring(0, 500),
+          );
+
+          return Response.json(
+            {
+              error: "Upstream API returned an error status",
+              status: res.status,
+              snippet: errorText.substring(0, 200), // Return a snippet of the HTML to help you debug
+            },
+            { status: res.status },
+          );
+        }
+
+        // 2. Verify the Content-Type is actually JSON before parsing
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          const rawText = await res.text();
+          console.error(
+            `Expected JSON but got ${contentType}. Body snippet:`,
+            rawText.substring(0, 500),
+          );
+
+          return Response.json(
+            {
+              error: "Upstream API did not return JSON",
+              contentType: contentType,
+            },
+            { status: 502 },
+          ); // 502 Bad Gateway is a good fit here
+        }
+
+        // 3. Safe to parse
         upstreamData = await res.json();
       } catch (e) {
-        const error = e as Error;
-        console.error(error);
-        return Response.json({name:error.name, message: error.message , cause:error.cause , stack: error.stack});
+        const error = e as Error; // Typecast to Error if using TypeScript: e as Error
+        console.error("Network or parsing error:", error);
+        return Response.json(
+          {
+            name: error.name,
+            message: error.message,
+            cause: error.cause,
+            stack: error.stack,
+          },
+          { status: 500 },
+        );
       }
 
       const currentPage = Number(upstreamData.page);
