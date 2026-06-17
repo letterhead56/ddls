@@ -55,7 +55,8 @@ export default {
         upstreamData  = await res.json()
       } catch (e) {
         const error = e as Error;
-        return Response.json(error)
+        console.error(error)
+        return Response.json({error})
       }
 
       const currentPage = Number(upstreamData.page);
